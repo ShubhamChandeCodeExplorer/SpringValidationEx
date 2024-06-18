@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -66,5 +68,22 @@ public class EmployeeController {
     public ResponseEntity<String> deleteall() {
         employeeServiceImpl.deleteAll();
         return ResponseEntity.ok("All Data Deleted Sucessfully..");
+    }
+
+    @GetMapping("/findbyanyinput/{input}")
+    public ResponseEntity<List<Employee>> findByAnyInput(@PathVariable String input){
+        SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MM-yyyy");
+        return ResponseEntity.ok(employeeServiceImpl.findAll().stream().filter(e->dateFormat.format(e.getEmpDOB()).equals(input)||String.valueOf(e.getEmpId()).equals(input)||String.valueOf(e.getEmpConatct()).equals(input)||e.getEmpEmailId().equals(input)).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/elegibleforloan/{empId}")
+    public ResponseEntity<String> checkEligibleForLoan(@PathVariable int empId){
+        Employee  employee=employeeServiceImpl.findById(empId).orElseThrow(()->new RecoredNotFoundException("Employee Id Dosent Exits...."));
+        boolean flag=false;
+        if(employee.getEmpSalary()>=50000){
+            return ResponseEntity.ok("Eligible for Loan");
+        }else{
+            return ResponseEntity.ok("Not Eligible for Loan");
+        }
     }
 }
